@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+f<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -1281,7 +1281,7 @@
             <div class="login-header">
                 <img src="upload/pasted_file_eJuot8_LogoCCL1400145001Branco.png" alt="Logo Carbonífera">
                 <h1>Gerador de Blends</h1>
-                <p>Sistema de Controle de Qualidade</p>
+                <p>Sistema de Controle de Qualidade Carbonifera Catarinense</p>
             </div>
 
             <div id="loginMessage" class="login-message"></div>
@@ -1366,18 +1366,18 @@
                     <input type="number" id="totalToneladas" value="1000" oninput="updateResults()">
                 </div>
                 <div class="input-group">
-                    <label>Peso p/ Carreta (t)</label>
+                    <label>Média de peso p/ Carreta (t)</label>
                     <input type="number" id="pesoCarreta" value="20" oninput="updateResults()">
                 </div>
                 <div class="input-group">
-                    <label>Meta PCS Mínimo</label>
+                    <label>PCS Mínimo</label>
                     <input type="number" id="metaPcsMin" value="4500" oninput="saveData()">
                 </div>
             </div>
 
             
             <div class="toggle-container" style="gap: 10px;">
-                <button id="btnOcultarZerados" class="btn-toggle-mistura" onclick="toggleOcultarZerados()" style="background-color: #7f8c8d;">OCULTAR ZERADOS</button>
+                <button id="btnOcultarZerados" class="btn-toggle-mistura" onclick="toggleOcultarZerados()" style="background-color: #7f8c8d;">OCULTAR MATERIAIS ZERADOS</button>
                 <button id="btnToggleMistura" class="btn-toggle-mistura" onclick="toggleMistura()">OCULTAR MISTURA</button>
             </div>
             <div id="misturaContainer" class="mistura-container">
@@ -1404,7 +1404,7 @@
                 
                 <div class="mistura-row">
                     <div class="mistura-item">
-                        <label>Mistura de Finos + Especial :</label>
+                        <label>  Mistura :</label>
                         <input type="text" id="misturaFinosCargas" value="05 cargas" oninput="saveData()">
                     </div>
                     <div class="mistura-item">
@@ -1432,7 +1432,7 @@
             </div>
 
             <div class="actions">
-                <button class="btn-primary" onclick="autoBlend()">🤖 AUTO BLEND (43-44% CINZA)</button>
+                <button class="btn-primary" onclick="autoBlend()">🤖 AUTO BLEND </button>
                 <button class="btn-info" onclick="autoBlend(true)" style="background-color: #3498db;">💰 BLEND MAIS RENTÁVEL</button>
                 <button class="btn-success" onclick="saveCurrentLot()">💾 SALVAR LOTE</button>
                 <button class="btn-secondary" onclick="openStockManager()">📦 ESTOQUE</button>
@@ -1515,7 +1515,7 @@
                             </div>
                             <div class="quality-value" id="resumoUmidade">-</div>
                             <div class="quality-unit">%</div>
-                            <div class="quality-reference">Ref: ≤ 10%</div>
+                            <div class="quality-reference">Ref: ≤ 10.30%</div>
                             <div class="quality-status" id="resumoStatusUmidade">-</div>
                         </div>
 
@@ -1684,7 +1684,7 @@
                 showLogin();
                 // Pequeno aviso para novos usuários em outros computadores
                 if (!savedUsers) {
-                    console.log("Sistema inicializado em novo dispositivo. Use o usuário padrão Anderson para importar outros usuários se necessário.");
+                    console.log("Sistema inicializado em novo dispositivo. Use o usuário padrão Anderson ou usuários cadastrados como administrador para importar outros usuários se necessário.");
                 }
             }
         }
@@ -2008,7 +2008,7 @@
                 if(data.theme) setTheme(data.theme);
                 if(data.ocultarZerados) {
                     ocultarZerados = data.ocultarZerados;
-                    document.getElementById('btnOcultarZerados').innerText = 'MOSTRAR ZERADOS';
+                    document.getElementById('btnOcultarZerados').innerText = 'MOSTRAR MATERIAIS ZERADOS';
                 }
                 if(data.calcData) {
                     window.savedCalcData = data.calcData;
@@ -2053,7 +2053,7 @@
         function toggleOcultarZerados() {
             ocultarZerados = !ocultarZerados;
             const btn = document.getElementById('btnOcultarZerados');
-            btn.innerText = ocultarZerados ? 'MOSTRAR ZERADOS' : 'OCULTAR ZERADOS';
+            btn.innerText = ocultarZerados ? 'MOSTRAR MATERIAIS ZERADOS' : 'OCULTAR MATERIAIS ZERADOS';
             renderMaterials();
             saveData();
         }
@@ -2165,7 +2165,7 @@
 
             const pcsOk = m.pcs >= 4500;
             const czOk = m.cinza <= 44;
-            const umidOk = m.umid <= 10;
+            const umidOk = m.umid <= 10.30;
             const enxOk = m.enxofre <= 2.30;
             const pOk = Math.abs(m.soma - 100) < 0.01;
             const allOk = pcsOk && czOk && umidOk && enxOk && pOk;
@@ -2242,7 +2242,7 @@
             const m = calculateMetrics(percentages, document.getElementById('totalToneladas').value);
             const pcsOk = m.pcs >= 4500;
             const cinzaOk = m.cinza <= 44;
-            const umidOk = m.umid <= 10;
+            const umidOk = m.umid <= 10.30;
             const enxOk = m.enxofre <= 2.30;
             return pcsOk && cinzaOk && umidOk && enxOk;
         }
@@ -2270,7 +2270,7 @@
             
             const pcsOk = metrics.pcs >= 4500;
             const czOk = metrics.cinza <= 44;
-            const umidOk = metrics.umid <= 10;
+            const umidOk = metrics.umid <= 10.30;
             const enxOk = metrics.enxofre <= 2.30;
             
             ultimoResumo = {
@@ -2686,7 +2686,7 @@
 
             const pcsOk = m.pcs >= 4500;
             const czOk = m.cinza <= 44;
-            const umidOk = m.umid <= 10;
+            const umidOk = m.umid <= 10.30;
             const enxOk = m.enxofre <= 2.30;
             const isOk = pcsOk && czOk && umidOk && enxOk;
 
@@ -2718,7 +2718,7 @@
                 <div class="pdf-page">
                     <div class="pdf-header">
                         <div class="pdf-header-left">
-                            <img src="upload/pasted_file_eJuot8_LogoCCL1400145001Branco.png" alt="Logo">
+                            <img src="logo.png" alt="Logo Carbonífera" style="max-width: 200px; height: auto;">                           
                             <div>
                                 <h2 class="pdf-header-title">RELATÓRIO DE BLEND</h2>
                                 <p class="pdf-header-subtitle">Análise Técnica de Combustíveis e Resíduos</p>
