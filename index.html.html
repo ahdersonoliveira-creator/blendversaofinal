@@ -1950,17 +1950,17 @@ f<!DOCTYPE html>
             { nome: "Especial", pcs: 3310, cinzas: 58, umidade: 18, enxofre: 2.4, estoque: 1000, custoFixo: 0, custoVariavel: 0 },
             { nome: "Carvão Barro Branco", pcs: 5500, cinzas: 18, umidade: 18, enxofre: 0, estoque: 1000, custoFixo: 0, custoVariavel: 0 },
             { nome: "Finos Barro Branco", pcs: 7000, cinzas: 8, umidade: 6, enxofre: 1.14, estoque: 1500, custoFixo: 0, custoVariavel: 0 },
-            { nome: "Barro Branco", pcs: 6000, cinzas: 44, umidade: 6, enxofre: 2.4, estoque: 0, custoFixo: 0, custoVariavel: 0 },
-            { nome: "Pó de Serra LBV", pcs: 8000, cinzas: 3, umidade: 2, enxofre: 0.5, estoque: 0, custoFixo: 0, custoVariavel: 0 },
-            { nome: "COQUE VERDE", pcs: 1800, cinzas: 1, umidade: 6, enxofre: 5.5, estoque: 0, custoFixo: 0, custoVariavel: 0 },
-            { nome: "REJEITO LBV", pcs: 4700, cinzas: 60, umidade: 15, enxofre: 3.5, estoque: 0, custoFixo: 0, custoVariavel: 0 },
-            { nome: "CE 4700 - Finos", pcs: 4200, cinzas: 35, umidade: 2, enxofre: 1.0, estoque: 0, custoFixo: 0, custoVariavel: 0 },
-            { nome: "CE 4200 - Grado", pcs: 4500, cinzas: 41, umidade: 15, enxofre: 1.0, estoque: 0, custoFixo: 0, custoVariavel: 0 },
-            { nome: "CE 4500 - Granulado Copelmi", pcs: 4865, cinzas: 40, umidade: 15, enxofre: 1.0, estoque: 0, custoFixo: 0, custoVariavel: 0 },
-            { nome: "Finos Carvão Vegetal", pcs: 5000, cinzas: 18, umidade: 25, enxofre: 0.02, estoque: 0, custoFixo: 0, custoVariavel: 0 },
-            { nome: "Rejeito LNH - Relavado", pcs: 2900, cinzas: 62, umidade: 6, enxofre: 3.5, estoque: 0, custoFixo: 0, custoVariavel: 0 },
-            { nome: "Finos Barro Branco", pcs: 2820, cinzas: 63, umidade: 14, enxofre: 2.4, estoque: 0, custoFixo: 0, custoVariavel: 0 },
-            { nome: "Carvão Barro Branco", pcs: 4886, cinzas: 39.73, umidade: 10, enxofre: 1.58, estoque: 0, custoFixo: 0, custoVariavel: 0 }
+            { nome: "editar", pcs: 6000, cinzas: 44, umidade: 6, enxofre: 2.4, estoque: 0, custoFixo: 0, custoVariavel: 0 },
+            { nome: "editar", pcs: 8000, cinzas: 3, umidade: 2, enxofre: 0.5, estoque: 0, custoFixo: 0, custoVariavel: 0 },
+            { nome: "editar", pcs: 1800, cinzas: 1, umidade: 6, enxofre: 5.5, estoque: 0, custoFixo: 0, custoVariavel: 0 },
+            { nome: "editar", pcs: 4700, cinzas: 60, umidade: 15, enxofre: 3.5, estoque: 0, custoFixo: 0, custoVariavel: 0 },
+            { nome: "editar", pcs: 4200, cinzas: 35, umidade: 2, enxofre: 1.0, estoque: 0, custoFixo: 0, custoVariavel: 0 },
+            { nome: "editar", pcs: 4500, cinzas: 41, umidade: 15, enxofre: 1.0, estoque: 0, custoFixo: 0, custoVariavel: 0 },
+            { nome: "editar", pcs: 4865, cinzas: 40, umidade: 15, enxofre: 1.0, estoque: 0, custoFixo: 0, custoVariavel: 0 },
+            { nome: "editar", pcs: 5000, cinzas: 18, umidade: 25, enxofre: 0.02, estoque: 0, custoFixo: 0, custoVariavel: 0 },
+            { nome: "editar", pcs: 2900, cinzas: 62, umidade: 6, enxofre: 3.5, estoque: 0, custoFixo: 0, custoVariavel: 0 },
+            { nome: "editar", pcs: 2820, cinzas: 63, umidade: 14, enxofre: 2.4, estoque: 0, custoFixo: 0, custoVariavel: 0 },
+            { nome: "editar", pcs: 4886, cinzas: 39.73, umidade: 10, enxofre: 1.58, estoque: 0, custoFixo: 0, custoVariavel: 0 }
         ];
         let percentages = new Array(materials.length).fill(0);
         let history = [];
@@ -2875,11 +2875,11 @@ f<!DOCTYPE html>
             let pcs = null;
 
             if (nome === "Carvão bonito") {
-                enxofre = 0.025 * cinza + 1.36;
-                pcs = -86.41 * cinza + 8334.7;
+                enxofre = 0.025 * cinza + 1.35;
+                pcs = -86.41 * cinza + 8334.9;
             } else if (nome === "Finos Bonito") {
                 enxofre = 0.025 * cinza + 1.37;
-                pcs = -86.41 * cinza + 8334.7;
+                pcs = -86.41 * cinza + 8334.8;
             } else if (nome === "Carvão Barro Branco") {
                 enxofre = 0.031 * cinza + 0.73;
                 pcs = -93.006 * cinza + 8581.5;
