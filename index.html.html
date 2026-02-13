@@ -3002,13 +3002,22 @@ f<!DOCTYPE html>
         }
 
         function salvarNoHistorico() {
-            const lote = document.getElementById('numeroLote').value || 'Lote Sem Nome';
-            const data = new Date().toLocaleString();
-            const metrics = {
-                pcs: parseFloat(document.getElementById('resumoPCS').innerText),
-                cinza: parseFloat(document.getElementById('resumoCinza').innerText),
-                umidade: parseFloat(document.getElementById('resumoUmidade').innerText),
-                enxofre: parseFloat(document.getElementById('resumoEnxofre').innerText)
+    // Coleta os dados da tela (isso você já tem no código)
+    const lote = document.getElementById('numeroLote').value || 'Sem Nome';
+    const dadosParaEnviar = {
+        lote: lote,
+        data: new Date().toLocaleString(),
+        metrics: {
+            pcs: parseFloat(document.getElementById('resumoPCS').innerText),
+            cinza: parseFloat(document.getElementById('resumoCinza').innerText)
+            umidade: parseFloat(document.getElementById('resumoUmidade').innerText),
+            enxofre: parseFloat(document.getElementById('resumoEnxofre').innerText)
+        }
+    };
+
+    // CHAMA O FIREBASE (A função que criamos lá no final do arquivo)
+    window.salvarNoFirebase(dadosParaEnviar);
+}               
             };
             
             history.push({
@@ -3254,5 +3263,22 @@ f<!DOCTYPE html>
 
         window.onload = initAuth;
     </script>
+    // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDsHp_wgHMY4A8iP5vWcSGs9a3-CRHZ43E",
+  authDomain: "gerador-de-blends.firebaseapp.com",
+  projectId: "gerador-de-blends",
+  storageBucket: "gerador-de-blends.firebasestorage.app",
+  messagingSenderId: "314765490390",
+  appId: "1:314765490390:web:58f56431b74222b4b8f177"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 </body>
 </html>
