@@ -1,10 +1,10 @@
-f<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gerador de Blends - Sistema de Autenticação</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <title>Gerador de Blends- Sistema de Autenticação</title>
+    <script src="html2pdf.bundle.min.js"></script>
     <meta name="theme-color" content="#667eea">
     <meta name="description" content="Sistema de Geração de Blends de Cinzas - Carbonífera Catarinense">
     
@@ -12,7 +12,7 @@ f<!DOCTYPE html>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Gerador Blend">
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/1087/1087815.png">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
     
     <link rel="manifest" href="manifest.json">
     <style>
@@ -2163,7 +2163,7 @@ f<!DOCTYPE html>
             });
 
             const pcsOk = m.pcs >= 4500;
-            const czOk = m.cinza <= 44.01;
+            const czOk = m.cinza <= 44.00;
             const umidOk = m.umid <= 10.30;
             const enxOk = m.enxofre <= 2.30;
             const pOk = Math.abs(m.soma - 100) < 0.01;
@@ -2207,7 +2207,7 @@ f<!DOCTYPE html>
 
                 const m = calculateMetrics(temp, 1000);
                 // Critérios originais de aprovação para o Auto Blend
-                const approved = m.pcs >= metaPcs && m.cinza <= 44.01;
+                const approved = m.pcs >= metaPcs && m.cinza <= 44.00;
                 
                 if(approved) {
                     if (optimizeForCost) {
@@ -2218,7 +2218,7 @@ f<!DOCTYPE html>
                         }
                     } else {
                         // Busca o blend ideal na faixa de cinza desejada, caso não encontre disponibilizar um mais aproximado
-                        if(m.cinza >= 42 && m.cinza <= 44.51) {
+                        if(m.cinza >= 43.00 && m.cinza <= 44.00) {
                             bestConfig = temp;
                             found = true;
                             break;
@@ -2240,7 +2240,7 @@ f<!DOCTYPE html>
         function checkApprovalStatus() {
             const m = calculateMetrics(percentages, document.getElementById('totalToneladas').value);
             const pcsOk = m.pcs >= 4500;
-            const cinzaOk = m.cinza <= 44.01;
+            const cinzaOk = m.cinza <= 44.00;
             const umidOk = m.umid <= 10.30;
             const enxOk = m.enxofre <= 2.30;
             return pcsOk && cinzaOk && umidOk && enxOk;
@@ -2684,7 +2684,7 @@ f<!DOCTYPE html>
             const m = calculateMetrics(percentages, totalTon);
 
             const pcsOk = m.pcs >= 4500;
-            const czOk = m.cinza <= 44.01;
+            const czOk = m.cinza <= 44.00;
             const umidOk = m.umid <= 10.30;
             const enxOk = m.enxofre <= 2.30;
             const isOk = pcsOk && czOk && umidOk && enxOk;
@@ -2717,7 +2717,7 @@ f<!DOCTYPE html>
                 <div class="pdf-page">
                     <div class="pdf-header">
                         <div class="pdf-header-left">
-                            <img src="logo.png" alt="Logo Carbonífera" style="max-width: 200px; height: auto;">                           
+                            <img src="apple-touch-icon.png" alt="Logo Carbonífera" style="max-width: 200px; height: auto;">                           
                             <div>
                                 <h2 class="pdf-header-title">RELATÓRIO DE BLEND</h2>
                                 <p class="pdf-header-subtitle">Análise Técnica de Combustíveis e Resíduos</p>
@@ -3002,22 +3002,13 @@ f<!DOCTYPE html>
         }
 
         function salvarNoHistorico() {
-    // Coleta os dados da tela (isso você já tem no código)
-    const lote = document.getElementById('numeroLote').value || 'Sem Nome';
-    const dadosParaEnviar = {
-        lote: lote,
-        data: new Date().toLocaleString(),
-        metrics: {
-            pcs: parseFloat(document.getElementById('resumoPCS').innerText),
-            cinza: parseFloat(document.getElementById('resumoCinza').innerText)
-            umidade: parseFloat(document.getElementById('resumoUmidade').innerText),
-            enxofre: parseFloat(document.getElementById('resumoEnxofre').innerText)
-        }
-    };
-
-    // CHAMA O FIREBASE (A função que criamos lá no final do arquivo)
-    window.salvarNoFirebase(dadosParaEnviar);
-}               
+            const lote = document.getElementById('numeroLote').value || 'Lote Sem Nome';
+            const data = new Date().toLocaleString();
+            const metrics = {
+                pcs: parseFloat(document.getElementById('resumoPCS').innerText),
+                cinza: parseFloat(document.getElementById('resumoCinza').innerText),
+                umidade: parseFloat(document.getElementById('resumoUmidade').innerText),
+                enxofre: parseFloat(document.getElementById('resumoEnxofre').innerText)
             };
             
             history.push({
@@ -3248,37 +3239,25 @@ f<!DOCTYPE html>
             `;
         }
 
-        // Service Worker Registration
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => {
-                        console.log('Service Worker registrado com sucesso:', reg);
-                    })
-                    .catch(err => {
-                        console.log('Erro ao registrar Service Worker:', err);
-                    });
-            });
-        }
-
         window.onload = initAuth;
     </script>
-    // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyDsHp_wgHMY4A8iP5vWcSGs9a3-CRHZ43E",
-  authDomain: "gerador-de-blends.firebaseapp.com",
-  projectId: "gerador-de-blends",
-  storageBucket: "gerador-de-blends.firebasestorage.app",
-  messagingSenderId: "314765490390",
-  appId: "1:314765490390:web:58f56431b74222b4b8f177"
-};
+    <!-- Firebase Configuration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyDsHp_wgHMY4A8iP5vWcSGs9a3-CRHZ43E",
+            authDomain: "gerador-de-blends.firebaseapp.com",
+            projectId: "gerador-de-blends",
+            storageBucket: "gerador-de-blends.firebasestorage.app",
+            messagingSenderId: "314765490390",
+            appId: "1:314765490390:web:58f56431b74222b4b8f177"
+        };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        console.log("Firebase inicializado com sucesso!");
+    </script>
 </body>
 </html>
