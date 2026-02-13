@@ -2246,7 +2246,25 @@
             return pcsOk && cinzaOk && umidOk && enxOk;
         }
 
-        function saveCurrentLot() {
+        funfunction saveCurrentLot() {
+    const loteNome = document.getElementById('numeroLote').value || 'Sem Nome';
+    
+    // Pegando os dados que estão na tela no momento
+    const dadosParaSalvar = {
+        lote: loteNome,
+        data: new Date().toLocaleString(),
+        metrics: {
+            pcs: document.getElementById('resumoPCS').innerText,
+            cinza: document.getElementById('resumoCinza').innerText,
+            umidade: document.getElementById('resumoUmidade').innerText,
+            enxofre: document.getElementById('resumoEnxofre').innerText
+        },
+        usuario: currentUser ? currentUser.nome : "Desconhecido"
+    };
+
+    // CHAMA A NUVEM AQUI:
+    window.salvarLoteNuvem(dadosParaSalvar);
+}ction saveCurrentLot() {
             const lote = document.getElementById('numeroLote').value || 'Lote_' + Date.now();
             const totalTon = parseFloat(document.getElementById('totalToneladas').value) || 1000;
             const pesoCarreta = parseFloat(document.getElementById('pesoCarreta').value) || 20;
