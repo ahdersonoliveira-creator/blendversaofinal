@@ -3001,15 +3001,20 @@
             }));
         }
 
-        function salvarNoHistorico() {
-            const lote = document.getElementById('numeroLote').value || 'Lote Sem Nome';
-            const data = new Date().toLocaleString();
-            const metrics = {
-                pcs: parseFloat(document.getElementById('resumoPCS').innerText),
-                cinza: parseFloat(document.getElementById('resumoCinza').innerText),
-                umidade: parseFloat(document.getElementById('resumoUmidade').innerText),
-                enxofre: parseFloat(document.getElementById('resumoEnxofre').innerText)
-            };
+       function salvarNoHistorico() {
+    const lote = document.getElementById('numeroLote').value || 'Lote Sem Nome';
+    const dadosLote = {
+        lote: lote,
+        data: new Date().toLocaleString(),
+        // ... outros dados que você já salva ...
+    };
+
+    // ESTA É A LINHA QUE FAZ A MÁGICA:
+    window.enviarParaNuvem(dadosLote);
+
+    alert('Salvo com sucesso para todos os usuários!');
+}    }
+}            };
             
             history.push({
                 lote, data, metrics,
