@@ -1,4 +1,4 @@
-f<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
@@ -1690,6 +1690,9 @@ f<!DOCTYPE html>
 
         function saveUsers() {
             localStorage.setItem('blendUsers', JSON.stringify(users));
+            if (window.syncUsersToFirebase) {
+                window.syncUsersToFirebase(users);
+            }
         }
 
         function switchTab(tab) {
@@ -1985,10 +1988,10 @@ f<!DOCTYPE html>
             saveData();
         }
 
-        function init() {
-            const savedData = localStorage.getItem('blendDataPro');
+        function init(externalData = null) {
+            const savedData = externalData || JSON.parse(localStorage.getItem('blendDataPro'));
             if (savedData) {
-                const data = JSON.parse(savedData);
+                const data = savedData;
                 materials = data.materials || materials;
                 percentages = data.percentages || percentages;
                 history = data.history || [];
@@ -1996,14 +1999,19 @@ f<!DOCTYPE html>
                 document.getElementById('pesoCarreta').value = data.pesoCarreta || 20;
                 document.getElementById('metaPcsMin').value = data.metaPcsMin || 4500;
                 document.getElementById('numeroLote').value = data.numeroLote || '';
-                if(data.misturaVisivel === false) toggleMistura();
-                if(data.misturaLoteInfo) document.getElementById('misturaLoteInfo').value = data.misturaLoteInfo;
-                if(data.misturaBonitoCargas) document.getElementById('misturaBonitoCargas').value = data.misturaBonitoCargas;
-                if(data.misturaBonitoConchadas) document.getElementById('misturaBonitoConchadas').value = data.misturaBonitoConchadas;
-                if(data.misturaFinosCargas) document.getElementById('misturaFinosCargas').value = data.misturaFinosCargas;
-                if(data.misturaFinosConchadas) document.getElementById('misturaFinosConchadas').value = data.misturaFinosConchadas;
-                if(data.misturaEspecialConchadas) document.getElementById('misturaEspecialConchadas').value = data.misturaEspecialConchadas;
-                if(data.misturaObs) document.getElementById('misturaObs').value = data.misturaObs;
+                
+                // Aplicar valores nos campos de mistura
+                const fields = [
+                    'misturaLoteInfo', 'misturaBonitoCargas', 'misturaBonitoConchadas', 
+                    'misturaFinosCargas', 'misturaFinosConchadas', 'misturaEspecialConchadas', 'misturaObs'
+                ];
+                fields.forEach(field => {
+                    if (data[field] !== undefined && document.getElementById(field)) {
+                        document.getElementById(field).value = data[field];
+                    }
+                });
+
+                if(data.misturaVisivel === false && misturaVisivel) toggleMistura();
                 if(data.theme) setTheme(data.theme);
                 if(data.ocultarZerados) {
                     ocultarZerados = data.ocultarZerados;
@@ -2982,7 +2990,7 @@ f<!DOCTYPE html>
                 modoAuto: modoAutoCalculadora
             };
 
-            localStorage.setItem('blendDataPro', JSON.stringify({
+            const dataToSave = {
                 misturaVisivel: typeof misturaVisivel !== 'undefined' ? misturaVisivel : true,
                 misturaLoteInfo: document.getElementById('misturaLoteInfo').value,
                 misturaBonitoCargas: document.getElementById('misturaBonitoCargas').value,
@@ -2998,7 +3006,14 @@ f<!DOCTYPE html>
                 numeroLote: document.getElementById('numeroLote').value,
                 ocultarZerados: ocultarZerados,
                 calcData: calcData
-            }));
+            };
+
+            localStorage.setItem('blendDataPro', JSON.stringify(dataToSave));
+            
+            // Sincronizar com Firebase se a função estiver disponível
+            if (window.syncDataToFirebase) {
+                window.syncDataToFirebase(dataToSave);
+            }
         }
 
         function salvarNoHistorico() {
@@ -3240,28 +3255,78 @@ f<!DOCTYPE html>
         }
 
         window.onload = initAuth;
-    </script>type="module">
-	// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+    </script>
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyDL2JF_qIDpu60PtXlNjIxx8Sg4wOt0x1k",
-  authDomain: "blendscatarinense.firebaseapp.com",
-  projectId: "blendscatarinense",
-  storageBucket: "blendscatarinense.firebasestorage.app",
-  messagingSenderId: "332215917446",
-  appId: "1:332215917446:web:2116cbe4de0b2de8442a07",
-  measurementId: "G-162BZGDPW8"
-};
+    <!-- Firebase Configuration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyDsHp_wgHMY4A8iP5vWcSGs9a3-CRHZ43E",
+            authDomain: "gerador-de-blends.firebaseapp.com",
+            projectId: "gerador-de-blends",
+            storageBucket: "gerador-de-blends.firebasestorage.app",
+            messagingSenderId: "314765490390",
+            appId: "1:314765490390:web:58f56431b74222b4b8f177"
+        };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-      
-	</body>
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        console.log("Firebase & Firestore inicializados com sucesso!");
+
+        // Função para salvar dados no Firestore
+        window.syncUsersToFirebase = async function(usersList) {
+            try {
+                await setDoc(doc(db, "appData", "users"), {
+                    users: usersList,
+                    lastUpdated: new Date().toISOString()
+                });
+                console.log("Usuários sincronizados com o Firebase!");
+            } catch (e) {
+                console.error("Erro ao sincronizar usuários:", e);
+            }
+        };
+
+        window.syncDataToFirebase = async function(data) {
+            try {
+                await setDoc(doc(db, "appData", "globalState"), {
+                    ...data,
+                    lastUpdated: new Date().toISOString(),
+                    updatedBy: currentUser ? currentUser.username : 'Sistema'
+                });
+                console.log("Dados sincronizados com o Firebase!");
+            } catch (e) {
+                console.error("Erro ao sincronizar com Firebase:", e);
+            }
+        };
+
+        // Escutar usuários em tempo real
+        onSnapshot(doc(db, "appData", "users"), (doc) => {
+            if (doc.exists()) {
+                const data = doc.data();
+                if (data.users) {
+                    users = data.users;
+                    localStorage.setItem('blendUsers', JSON.stringify(users));
+                    console.log("Lista de usuários atualizada via Firebase!");
+                }
+            }
+        });
+
+        // Escutar mudanças em tempo real
+        onSnapshot(doc(db, "appData", "globalState"), (doc) => {
+            if (doc.exists()) {
+                const data = doc.data();
+                console.log("Novos dados recebidos do Firebase!");
+                
+                // Atualizar variáveis globais se não for o próprio usuário que salvou
+                if (data.updatedBy !== (currentUser ? currentUser.username : '')) {
+                    console.log("Sincronizando dados remotos...");
+                    init(data);
+                }
+            }
+        });
+    </script>
+</body>
 </html>
