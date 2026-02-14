@@ -3000,17 +3000,15 @@ f<!DOCTYPE html>
                 calcData: calcData
 				
 		function seuBotaoDeSalvar() {
-            const dadosDoBlend = {
-                lote: document.getElementById('lote').value,
-                resultado: document.getElementById('resultado').innerText,
-                // ... pegue todos os campos que você quer salvar
-            };
+    const dadosDoBlend = {
+        lote: document.getElementById('lote').value,
+        resultado: document.getElementById('resultado').innerText,
+        // ... pegue todos os campos que você quer salvar
+    };
 
-                // Agora envia para o Firebase
-            window.salvarBlendNuvem(dadosDoBlend);
-            }
-            }));
-        }
+    // Agora envia para o Firebase
+    window.salvarBlendNuvem(dadosDoBlend);
+}
 
         function salvarNoHistorico() {
             const lote = document.getElementById('numeroLote').value || 'Lote Sem Nome';
@@ -3275,5 +3273,6 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
+	
 	</body>
 </html>
