@@ -2819,6 +2819,9 @@
             if (confirm('Tem certeza que deseja excluir TODO o histórico salvo? Esta ação não pode ser desfeita.')) {
                 history = [];
                 saveData();
+                if (window.syncDataToFirebase) {
+                    window.syncDataToFirebase({ materials, percentages, history });
+                }
                 openHistory();
                 alert('Histórico excluído com sucesso!');
             }
@@ -2828,6 +2831,9 @@
             if (confirm('Tem certeza que deseja excluir este item do histórico?')) {
                 history.splice(idx, 1);
                 saveData();
+                if (window.syncDataToFirebase) {
+                    window.syncDataToFirebase({ materials, percentages, history });
+                }
                 openHistory();
             }
         }
@@ -3045,6 +3051,9 @@
             });
             
             saveData();
+            if (window.syncDataToFirebase) {
+                window.syncDataToFirebase({ materials, percentages, history });
+            }
             alert('Lote salvo no histórico com sucesso!');
         }
 
@@ -3270,7 +3279,7 @@
     </script>
 
 
-    <!-- Firebase Configuration - SOLUÇÃO DEFINITIVA DE PROGRAMAÇÃO -->
+    <!-- Firebase Configuration - SOLUÇÃO DEFINITIVA E SEGURA -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -3289,12 +3298,12 @@
         try {
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
-            console.log("✅ Firebase Conectado com Sucesso!");
+            console.log("✅ Firebase Conectado!");
         } catch (error) {
-            console.error("❌ Erro ao conectar Firebase:", error);
+            console.error("❌ Erro Firebase:", error);
         }
 
-        // 1. Sincronização de Usuários
+        // Sincronizar Usuários
         window.syncUsersToFirebase = async function(usersList) {
             if (!db) return;
             try {
@@ -3305,57 +3314,46 @@
             } catch (e) { console.error("Erro sync users:", e); }
         };
 
-        // 2. Sincronização de Dados e HISTÓRICO (Correção de Programação)
+        // Sincronizar Dados e HISTÓRICO
         window.syncDataToFirebase = async function(data) {
             if (!db) return;
             try {
                 const username = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : 'Sistema';
-                
-                // Forçamos a inclusão do histórico global no pacote de salvamento
                 const payload = {
                     ...data,
                     history: (typeof history !== 'undefined') ? history : (data.history || []),
                     lastUpdated: new Date().toISOString(),
                     updatedBy: username
                 };
-
                 await setDoc(doc(db, "appData", "globalState"), payload);
-                console.log("☁️ Histórico e Dados salvos na nuvem!");
-            } catch (e) { console.error("Erro ao salvar histórico:", e); }
+                console.log("☁️ Histórico sincronizado!");
+            } catch (e) { console.error("Erro sync data:", e); }
         };
 
-        // 3. Listeners em Tempo Real (Atualização entre dispositivos)
-        onSnapshot(doc(db, "appData", "users"), (snapshot) => {
-            if (snapshot.exists()) {
-                const data = snapshot.data();
-                if (data.users) {
-                    localStorage.setItem('blendUsers', JSON.stringify(data.users));
-                    if (typeof users !== 'undefined') users = data.users;
+        // Listeners em Tempo Real
+        if (db) {
+            onSnapshot(doc(db, "appData", "users"), (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    if (data.users) {
+                        localStorage.setItem('blendUsers', JSON.stringify(data.users));
+                        if (typeof users !== 'undefined') users = data.users;
+                    }
                 }
-            }
-        });
+            });
 
-        onSnapshot(doc(db, "appData", "globalState"), (snapshot) => {
-            if (snapshot.exists()) {
-                const data = snapshot.data();
-                const myUsername = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : '';
-                
-                if (data.updatedBy !== myUsername) {
-                    console.log("🔄 Recebendo histórico atualizado da nuvem...");
-                    localStorage.setItem('blendDataPro', JSON.stringify(data));
-                    
-                    // Atualiza a variável global de histórico do seu código
-                    if (typeof history !== 'undefined' && data.history) {
-                        history = data.history;
-                    }
-                    
-                    // Chama sua função init original para redesenhar a tela com os novos dados
-                    if (typeof init === 'function') {
-                        init(data);
+            onSnapshot(doc(db, "appData", "globalState"), (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    const myUsername = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : '';
+                    if (data.updatedBy !== myUsername) {
+                        localStorage.setItem('blendDataPro', JSON.stringify(data));
+                        if (typeof history !== 'undefined' && data.history) history = data.history;
+                        if (typeof init === 'function') init(data);
                     }
                 }
-            }
-        });
+            });
+        }
     </script>
 </body>
 </html>
