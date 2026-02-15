@@ -3270,7 +3270,7 @@
     </script>
 
 
-    <!-- Firebase Configuration - SINCRONIZAÇÃO DEDICADA (USUÁRIOS, DADOS E HISTÓRICO) -->
+    <!-- Firebase Configuration - SOLUÇÃO DEFINITIVA DE PROGRAMAÇÃO -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -3289,12 +3289,12 @@
         try {
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
-            console.log("✅ Firebase Firestore Conectado!");
+            console.log("✅ Firebase Conectado com Sucesso!");
         } catch (error) {
             console.error("❌ Erro ao conectar Firebase:", error);
         }
 
-        // 1. SINCRONIZAÇÃO DE USUÁRIOS (Documento: appData/users)
+        // 1. Sincronização de Usuários
         window.syncUsersToFirebase = async function(usersList) {
             if (!db) return;
             try {
@@ -3302,54 +3302,54 @@
                     users: usersList,
                     lastUpdated: new Date().toISOString()
                 });
-                console.log("☁️ Usuários salvos no Firebase!");
-            } catch (e) { console.error("Erro ao salvar usuários:", e); }
+            } catch (e) { console.error("Erro sync users:", e); }
         };
 
-        // 2. SINCRONIZAÇÃO DE DADOS E HISTÓRICO (Documento: appData/globalState)
+        // 2. Sincronização de Dados e HISTÓRICO (Correção de Programação)
         window.syncDataToFirebase = async function(data) {
             if (!db) return;
             try {
                 const username = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : 'Sistema';
                 
-                // Garantimos que o histórico está incluído no pacote de dados
-                await setDoc(doc(db, "appData", "globalState"), {
+                // Forçamos a inclusão do histórico global no pacote de salvamento
+                const payload = {
                     ...data,
-                    history: typeof history !== 'undefined' ? history : (data.history || []),
+                    history: (typeof history !== 'undefined') ? history : (data.history || []),
                     lastUpdated: new Date().toISOString(),
                     updatedBy: username
-                });
-                console.log("☁️ Dados e Histórico salvos no Firebase!");
-            } catch (e) { console.error("Erro ao salvar dados/histórico:", e); }
+                };
+
+                await setDoc(doc(db, "appData", "globalState"), payload);
+                console.log("☁️ Histórico e Dados salvos na nuvem!");
+            } catch (e) { console.error("Erro ao salvar histórico:", e); }
         };
 
-        // --- LISTENERS EM TEMPO REAL ---
-
-        // Ouvir mudanças nos Usuários
+        // 3. Listeners em Tempo Real (Atualização entre dispositivos)
         onSnapshot(doc(db, "appData", "users"), (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.data();
                 if (data.users) {
                     localStorage.setItem('blendUsers', JSON.stringify(data.users));
-                    if (typeof users !== 'undefined') {
-                        users = data.users;
-                        if (typeof loadUsersList === 'function' && document.getElementById('usersModal').style.display === 'block') {
-                            loadUsersList();
-                        }
-                    }
+                    if (typeof users !== 'undefined') users = data.users;
                 }
             }
         });
 
-        // Ouvir mudanças nos Dados e no Histórico
         onSnapshot(doc(db, "appData", "globalState"), (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.data();
                 const myUsername = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : '';
                 
                 if (data.updatedBy !== myUsername) {
-                    console.log("🔄 Sincronizando dados e histórico recebidos de: " + data.updatedBy);
+                    console.log("🔄 Recebendo histórico atualizado da nuvem...");
                     localStorage.setItem('blendDataPro', JSON.stringify(data));
+                    
+                    // Atualiza a variável global de histórico do seu código
+                    if (typeof history !== 'undefined' && data.history) {
+                        history = data.history;
+                    }
+                    
+                    // Chama sua função init original para redesenhar a tela com os novos dados
                     if (typeof init === 'function') {
                         init(data);
                     }
