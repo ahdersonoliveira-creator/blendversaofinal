@@ -2266,6 +2266,11 @@
             });
             saveData();
             
+            // Sincroniza com o Firebase imediatamente após salvar o lote principal
+            if (window.syncDataToFirebase) {
+                window.syncDataToFirebase({ materials, percentages, history });
+            }
+            
             mostrarResumoLote(lote, totalTon, pesoCarreta, metrics, isApproved);
             showPDFButton();
         }
