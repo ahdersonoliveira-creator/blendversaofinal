@@ -3028,23 +3028,28 @@
             }
         }
 
-        function salvarNoHistorico() {
+                function salvarNoHistorico() {
             const lote = document.getElementById('numeroLote').value || 'Lote Sem Nome';
             const data = new Date().toLocaleString();
             const metrics = {
-                pcs: parseFloat(document.getElementById('resumoPCS').innerText),
-                cinza: parseFloat(document.getElementById('resumoCinza').innerText),
-                umidade: parseFloat(document.getElementById('resumoUmidade').innerText),
-                enxofre: parseFloat(document.getElementById('resumoEnxofre').innerText)
+                pcs: parseFloat(document.getElementById('resumoPCS').innerText) || 0,
+                cinza: parseFloat(document.getElementById('resumoCinza').innerText) || 0,
+                umidade: parseFloat(document.getElementById('resumoUmidade').innerText) || 0,
+                enxofre: parseFloat(document.getElementById('resumoEnxofre').innerText) || 0
             };
             
-            history.push({
+            const newItem = {
                 lote, data, metrics,
                 totalTon: document.getElementById('totalToneladas').value,
                 percentages: [...percentages]
-            });
+            };
             
-            saveData();
+            if (window.addHistoryToFirebase) {
+                window.addHistoryToFirebase(newItem);
+            } else {
+                history.unshift(newItem);
+                saveData();
+            }
             alert('Lote salvo no histórico com sucesso!');
         }
 
@@ -3272,7 +3277,7 @@
     <!-- Firebase Configuration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         
         const firebaseConfig = {
             apiKey: "AIzaSyDsHp_wgHMY4A8iP5vWcSGs9a3-CRHZ43E",
@@ -3283,84 +3288,69 @@
             appId: "1:314765490390:web:58f56431b74222b4b8f177"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         console.log("Firebase & Firestore inicializados com sucesso!");
 
-        // Função para salvar dados no Firestore
         window.syncUsersToFirebase = async function(usersList) {
             try {
                 await setDoc(doc(db, "appData", "users"), {
                     users: usersList,
                     lastUpdated: new Date().toISOString()
                 });
-                console.log("Usuários sincronizados com o Firebase!");
-            } catch (e) {
-                console.error("Erro ao sincronizar usuários:", e);
-            }
+            } catch (e) { console.error("Erro ao sincronizar usuários:", e); }
         };
 
         window.syncDataToFirebase = async function(data) {
             try {
+                const { history: _, ...stateWithoutHistory } = data;
                 await setDoc(doc(db, "appData", "globalState"), {
-                    ...data,
+                    ...stateWithoutHistory,
                     lastUpdated: new Date().toISOString(),
                     updatedBy: currentUser ? currentUser.username : 'Sistema'
                 });
-                console.log("Dados sincronizados com o Firebase!");
-            } catch (e) {
-                console.error("Erro ao sincronizar com Firebase:", e);
-            }
+            } catch (e) { console.error("Erro ao sincronizar com Firebase:", e); }
         };
 
-        // Escutar usuários em tempo real
+        window.addHistoryToFirebase = async function(historyItem) {
+            try {
+                await addDoc(collection(db, "blendsHistory"), {
+                    ...historyItem,
+                    serverTimestamp: new Date().toISOString()
+                });
+            } catch (e) { console.error("Erro ao adicionar histórico:", e); }
+        };
+
         onSnapshot(doc(db, "appData", "users"), (doc) => {
             if (doc.exists()) {
                 const data = doc.data();
                 if (data.users) {
                     users = data.users;
                     localStorage.setItem('blendUsers', JSON.stringify(users));
-                    console.log("Lista de usuários atualizada via Firebase!");
                 }
             }
         });
 
-        // Escutar mudanças em tempo real
         onSnapshot(doc(db, "appData", "globalState"), (doc) => {
             if (doc.exists()) {
                 const data = doc.data();
-                console.log("Novos dados recebidos do Firebase!");
-                
-                // Atualizar variáveis globais se não for o próprio usuário que salvou
                 if (data.updatedBy !== (currentUser ? currentUser.username : '')) {
-                    console.log("Sincronizando dados remotos...");
                     init(data);
                 }
             }
         });
-    <script type="module">
-    // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyD1SlXItIwJPSucfWExeikNoqUJq72OGD8",
-  authDomain: "blend-catarinense-c6a8a.firebaseapp.com",
-  projectId: "blend-catarinense-c6a8a",
-  storageBucket: "blend-catarinense-c6a8a.firebasestorage.app",
-  messagingSenderId: "793365169698",
-  appId: "1:793365169698:web:91e9d7338a53c108d56c7b",
-  measurementId: "G-35MC1JBGXT"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-    
+        const historyQuery = query(collection(db, "blendsHistory"), orderBy("serverTimestamp", "desc"));
+        onSnapshot(historyQuery, (snapshot) => {
+            const remoteHistory = [];
+            snapshot.forEach((doc) => {
+                remoteHistory.push({ id: doc.id, ...doc.data() });
+            });
+            history = remoteHistory;
+            if (document.getElementById('historyModal').style.display === 'block') {
+                openHistory();
+            }
+        });
+    </script>
 </body>
 </html>
