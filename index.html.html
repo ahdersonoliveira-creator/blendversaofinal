@@ -3270,13 +3270,11 @@
     </script>
 
 
-    <!-- Firebase Configuration - VERSÃO CORRIGIDA E UNIFICADA -->
+    <!-- Firebase Configuration - VERSÃO FINAL COM SINCRONIZAÇÃO DE HISTÓRICO -->
     <script type="module">
-        // 1. Importações via CDN para navegadores
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         
-        // 2. Configuração Unificada (ID: blend-catarinense-c6a8a)
         const firebaseConfig = {
             apiKey: "AIzaSyD1SlXItIwJPSucfWExeikNoqUJq72OGD8",
             authDomain: "blend-catarinense-c6a8a.firebaseapp.com",
@@ -3287,17 +3285,16 @@
             measurementId: "G-35MC1JBGXT"
         };
 
-        // 3. Inicialização
         let db;
         try {
             const app = initializeApp(firebaseConfig);
             db = getFirestore(app);
-            console.log("✅ Firebase & Firestore inicializados com sucesso!");
+            console.log("✅ Firebase & Firestore inicializados!");
         } catch (error) {
-            console.error("❌ Erro ao inicializar Firebase:", error);
+            console.error("❌ Erro Firebase:", error);
         }
 
-        // 4. Funções de Sincronização
+        // Sincronizar Usuários
         window.syncUsersToFirebase = async function(usersList) {
             if (!db) return;
             try {
@@ -3305,12 +3302,10 @@
                     users: usersList,
                     lastUpdated: new Date().toISOString()
                 });
-                console.log("☁️ Usuários sincronizados com o Firebase!");
-            } catch (e) {
-                console.error("❌ Erro ao sincronizar usuários:", e);
-            }
+            } catch (e) { console.error("Erro sync users:", e); }
         };
 
+        // Sincronizar Dados (Materiais, Percentuais e HISTÓRICO)
         window.syncDataToFirebase = async function(data) {
             if (!db) return;
             try {
@@ -3320,22 +3315,17 @@
                     lastUpdated: new Date().toISOString(),
                     updatedBy: username
                 });
-                console.log("☁️ Dados do Blend sincronizados com o Firebase!");
-            } catch (e) {
-                console.error("❌ Erro ao sincronizar dados:", e);
-            }
+                console.log("☁️ Dados e Histórico sincronizados!");
+            } catch (e) { console.error("Erro sync data:", e); }
         };
 
-        // 5. Listeners em Tempo Real
+        // Listeners
         onSnapshot(doc(db, "appData", "users"), (snapshot) => {
             if (snapshot.exists()) {
                 const data = snapshot.data();
                 if (data.users) {
                     localStorage.setItem('blendUsers', JSON.stringify(data.users));
-                    if (typeof users !== 'undefined') {
-                        users = data.users;
-                    }
-                    console.log("🔄 Lista de usuários atualizada via Firebase!");
+                    if (typeof users !== 'undefined') users = data.users;
                 }
             }
         });
@@ -3344,8 +3334,13 @@
             if (snapshot.exists()) {
                 const data = snapshot.data();
                 const myUsername = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : '';
+                
                 if (data.updatedBy !== myUsername) {
-                    console.log("🔄 Novos dados recebidos de " + data.updatedBy + ". Sincronizando...");
+                    console.log("🔄 Sincronizando dados remotos (incluindo histórico)...");
+                    // Atualiza o localStorage local para manter consistência
+                    localStorage.setItem('blendDataPro', JSON.stringify(data));
+                    
+                    // Chama a função init do seu código original para atualizar a tela
                     if (typeof init === 'function') {
                         init(data);
                     }
