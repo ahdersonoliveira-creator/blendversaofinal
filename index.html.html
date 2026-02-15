@@ -3340,27 +3340,74 @@
             }
         });
     <script type="module">
-    // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyD1SlXItIwJPSucfWExeikNoqUJq72OGD8",
-  authDomain: "blend-catarinense-c6a8a.firebaseapp.com",
-  projectId: "blend-catarinense-c6a8a",
-  storageBucket: "blend-catarinense-c6a8a.firebasestorage.app",
-  messagingSenderId: "793365169698",
-  appId: "1:793365169698:web:91e9d7338a53c108d56c7b",
-  measurementId: "G-35MC1JBGXT"
-};
+    // Sua configuração (mantenha a sua chave conforme abaixo)
+    const firebaseConfig = {
+        apiKey: "AIzaSyD1SlXItIwJPSucfWExeikNoqUJq72OGD8",
+        authDomain: "blend-catarinense-c6a8a.firebaseapp.com",
+        projectId: "blend-catarinense-c6a8a",
+        storageBucket: "blend-catarinense-c6a8a.firebasestorage.app",
+        messagingSenderId: "79336516969",
+        appId: "1:79336516969:web:78c1995f50f75743f9a715"
+    };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+    // Inicialização
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // --- SINCRONIZAÇÃO EM TEMPO REAL ---
+    // Esta função ouve o banco e atualiza a variável 'history' global
+    const q = query(collection(db, "historico_lotes"), orderBy("timestamp", "desc"));
+    
+    onSnapshot(q, (snapshot) => {
+        window.history = []; // Limpa o histórico local
+        snapshot.forEach((documento) => {
+            window.history.push({ id: documento.id, ...documento.data() });
+        });
+        console.log("Histórico atualizado da nuvem. Total:", window.history.length);
+    });
+
+    // --- FUNÇÃO PARA SALVAR (Disponibilizada para os botões) ---
+    window.saveCurrentLot = async function() {
+        const loteNome = document.getElementById('numeroLote').value || 'Sem Nome';
+        
+        const dadosLote = {
+            lote: loteNome,
+            data: new Date().toLocaleString(),
+            metrics: {
+                pcs: document.getElementById('resumoPCS').innerText,
+                cinza: document.getElementById('resumoCinza').innerText,
+                umidade: document.getElementById('resumoUmidade').innerText,
+                enxofre: document.getElementById('resumoEnxofre').innerText
+            },
+            usuario: typeof currentUser !== 'undefined' ? currentUser.nome : "Desconhecido",
+            timestamp: new Date().getTime()
+        };
+
+        try {
+            await addDoc(collection(db, "historico_lotes"), dadosLote);
+            alert("✅ Lote salvo e compartilhado!");
+            if (typeof closeResumo === 'function') closeResumo();
+        } catch (e) {
+            console.error("Erro ao salvar:", e);
+            alert("Erro ao salvar na nuvem. Verifique as Regras no console do Firebase.");
+        }
+    };
+
+    // --- FUNÇÃO PARA EXCLUIR ---
+    window.deleteHistoryItem = async function(docId) {
+        if (confirm("Deseja excluir este lote para todos os usuários?")) {
+            try {
+                await deleteDoc(doc(db, "historico_lotes", docId));
+                alert("Lote removido.");
+            } catch (e) {
+                alert("Erro ao excluir.");
+            }
+        }
+    };
+</script>
     
 </body>
 </html>
