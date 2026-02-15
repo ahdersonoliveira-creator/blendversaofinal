@@ -3028,28 +3028,23 @@
             }
         }
 
-                function salvarNoHistorico() {
+        function salvarNoHistorico() {
             const lote = document.getElementById('numeroLote').value || 'Lote Sem Nome';
             const data = new Date().toLocaleString();
             const metrics = {
-                pcs: parseFloat(document.getElementById('resumoPCS').innerText) || 0,
-                cinza: parseFloat(document.getElementById('resumoCinza').innerText) || 0,
-                umidade: parseFloat(document.getElementById('resumoUmidade').innerText) || 0,
-                enxofre: parseFloat(document.getElementById('resumoEnxofre').innerText) || 0
+                pcs: parseFloat(document.getElementById('resumoPCS').innerText),
+                cinza: parseFloat(document.getElementById('resumoCinza').innerText),
+                umidade: parseFloat(document.getElementById('resumoUmidade').innerText),
+                enxofre: parseFloat(document.getElementById('resumoEnxofre').innerText)
             };
             
-            const newItem = {
+            history.push({
                 lote, data, metrics,
                 totalTon: document.getElementById('totalToneladas').value,
                 percentages: [...percentages]
-            };
+            });
             
-            if (window.addHistoryToFirebase) {
-                window.addHistoryToFirebase(newItem);
-            } else {
-                history.unshift(newItem);
-                saveData();
-            }
+            saveData();
             alert('Lote salvo no histórico com sucesso!');
         }
 
@@ -3274,81 +3269,87 @@
         window.onload = initAuth;
     </script>
 
-    <!-- Firebase Configuration -->
+
+    <!-- Firebase Configuration - VERSÃO CORRIGIDA E UNIFICADA -->
     <script type="module">
+        // 1. Importações via CDN para navegadores
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, setDoc, onSnapshot, collection, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         
+        // 2. Configuração Unificada (ID: blend-catarinense-c6a8a)
         const firebaseConfig = {
-            apiKey: "AIzaSyDsHp_wgHMY4A8iP5vWcSGs9a3-CRHZ43E",
-            authDomain: "gerador-de-blends.firebaseapp.com",
-            projectId: "gerador-de-blends",
-            storageBucket: "gerador-de-blends.firebasestorage.app",
-            messagingSenderId: "314765490390",
-            appId: "1:314765490390:web:58f56431b74222b4b8f177"
+            apiKey: "AIzaSyD1SlXItIwJPSucfWExeikNoqUJq72OGD8",
+            authDomain: "blend-catarinense-c6a8a.firebaseapp.com",
+            projectId: "blend-catarinense-c6a8a",
+            storageBucket: "blend-catarinense-c6a8a.firebasestorage.app",
+            messagingSenderId: "793365169698",
+            appId: "1:793365169698:web:91e9d7338a53c108d56c7b",
+            measurementId: "G-35MC1JBGXT"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        console.log("Firebase & Firestore inicializados com sucesso!");
+        // 3. Inicialização
+        let db;
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            console.log("✅ Firebase & Firestore inicializados com sucesso!");
+        } catch (error) {
+            console.error("❌ Erro ao inicializar Firebase:", error);
+        }
 
+        // 4. Funções de Sincronização
         window.syncUsersToFirebase = async function(usersList) {
+            if (!db) return;
             try {
                 await setDoc(doc(db, "appData", "users"), {
                     users: usersList,
                     lastUpdated: new Date().toISOString()
                 });
-            } catch (e) { console.error("Erro ao sincronizar usuários:", e); }
+                console.log("☁️ Usuários sincronizados com o Firebase!");
+            } catch (e) {
+                console.error("❌ Erro ao sincronizar usuários:", e);
+            }
         };
 
         window.syncDataToFirebase = async function(data) {
+            if (!db) return;
             try {
-                const { history: _, ...stateWithoutHistory } = data;
+                const username = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : 'Sistema';
                 await setDoc(doc(db, "appData", "globalState"), {
-                    ...stateWithoutHistory,
+                    ...data,
                     lastUpdated: new Date().toISOString(),
-                    updatedBy: currentUser ? currentUser.username : 'Sistema'
+                    updatedBy: username
                 });
-            } catch (e) { console.error("Erro ao sincronizar com Firebase:", e); }
+                console.log("☁️ Dados do Blend sincronizados com o Firebase!");
+            } catch (e) {
+                console.error("❌ Erro ao sincronizar dados:", e);
+            }
         };
 
-        window.addHistoryToFirebase = async function(historyItem) {
-            try {
-                await addDoc(collection(db, "blendsHistory"), {
-                    ...historyItem,
-                    serverTimestamp: new Date().toISOString()
-                });
-            } catch (e) { console.error("Erro ao adicionar histórico:", e); }
-        };
-
-        onSnapshot(doc(db, "appData", "users"), (doc) => {
-            if (doc.exists()) {
-                const data = doc.data();
+        // 5. Listeners em Tempo Real
+        onSnapshot(doc(db, "appData", "users"), (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.data();
                 if (data.users) {
-                    users = data.users;
-                    localStorage.setItem('blendUsers', JSON.stringify(users));
+                    localStorage.setItem('blendUsers', JSON.stringify(data.users));
+                    if (typeof users !== 'undefined') {
+                        users = data.users;
+                    }
+                    console.log("🔄 Lista de usuários atualizada via Firebase!");
                 }
             }
         });
 
-        onSnapshot(doc(db, "appData", "globalState"), (doc) => {
-            if (doc.exists()) {
-                const data = doc.data();
-                if (data.updatedBy !== (currentUser ? currentUser.username : '')) {
-                    init(data);
+        onSnapshot(doc(db, "appData", "globalState"), (snapshot) => {
+            if (snapshot.exists()) {
+                const data = snapshot.data();
+                const myUsername = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : '';
+                if (data.updatedBy !== myUsername) {
+                    console.log("🔄 Novos dados recebidos de " + data.updatedBy + ". Sincronizando...");
+                    if (typeof init === 'function') {
+                        init(data);
+                    }
                 }
-            }
-        });
-
-        const historyQuery = query(collection(db, "blendsHistory"), orderBy("serverTimestamp", "desc"));
-        onSnapshot(historyQuery, (snapshot) => {
-            const remoteHistory = [];
-            snapshot.forEach((doc) => {
-                remoteHistory.push({ id: doc.id, ...doc.data() });
-            });
-            history = remoteHistory;
-            if (document.getElementById('historyModal').style.display === 'block') {
-                openHistory();
             }
         });
     </script>
