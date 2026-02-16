@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-br" data-theme="black">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -1347,7 +1347,7 @@
                     </div>
                     <button class="btn-info" id="usersManagementBtn" onclick="openUsersManagement()" style="display:none">👥 USUÁRIOS</button>
                     <button class="btn-info" onclick="openHistory()">📜 Histórico</button>
-                    <button class="btn-info" id="themeToggle" onclick="toggleTheme()">☀️ Tema Light</button>
+                    <button class="btn-info" id="themeToggle" onclick="toggleTheme()">🌙 Tema Black</button>
                     <button class="btn-info" id="layoutToggle" onclick="toggleLayout()">📱 Layout Compacto</button>
                     <button class="btn-success" onclick="gerarLinkCompartilhamento()" title="Compartilhar usuários via link">🔗 Compartilhar App</button>
                     <button class="btn-info" onclick="toggleCalculadoraMistura()" style="background-color: #e67e22;">🧮 Calculadora de Mistura</button>
@@ -1376,7 +1376,7 @@
 
             
             <div class="toggle-container" style="gap: 10px;">
-                <button id="btnOcultarZerados" class="btn-toggle-mistura" onclick="toggleOcultarZerados()" style="background-color: #7f8c8d;">MOSTRAR MATERIAIS ZERADOS</button>
+                <button id="btnOcultarZerados" class="btn-toggle-mistura" onclick="toggleOcultarZerados()" style="background-color: #7f8c8d;">OCULTAR MATERIAIS ZERADOS</button>
                 <button id="btnToggleMistura" class="btn-toggle-mistura" onclick="toggleMistura()">OCULTAR MISTURA</button>
             </div>
             <div id="misturaContainer" class="mistura-container">
@@ -1660,7 +1660,7 @@
         // ===== AUTHENTICATION SYSTEM =====
         let users = [];
         let currentUser = null;
-        let currentTheme = 'black';
+        let currentTheme = 'light';
 
         function initAuth() {
             checkSync();
@@ -1970,7 +1970,7 @@
         let currentEditIndex = -1;
         let autoCalculateEnabled = true;
         let ultimoResumo = null;
-        let ocultarZerados = true;
+        let ocultarZerados = false;
 
         
         let misturaVisivel = true;
