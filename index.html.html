@@ -1970,7 +1970,7 @@
         let currentEditIndex = -1;
         let autoCalculateEnabled = true;
         let ultimoResumo = null;
-        let ocultarZerados = false;
+        let ocultarZerados = true;
 
         
         let misturaVisivel = true;
@@ -2029,11 +2029,11 @@
         function setTheme(theme) {
             currentTheme = theme;
             document.documentElement.setAttribute('data-theme', theme);
-            document.getElementById('themeToggle').innerText = theme === 'black' ? '🌙 Tema Black' : '☀️ Tema Light';
+            document.getElementById('themeToggle').innerText = theme === 'black' ? '☀️ Tema Light' : '🌙 Tema Black';
             saveData();
         }
 
-        function toggleTheme() { setTheme(currentTheme === 'light' ? 'black' : 'light'); }
+        function toggleTheme() { setTheme(currentTheme === 'black' ? 'black' : 'light'); }
 
         function toggleLayout() {
             const body = document.body;
