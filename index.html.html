@@ -2832,34 +2832,22 @@
             }
         }
 
-       function openHistory() {
-    console.log("Abrindo histórico da nuvem. Total de lotes:", history.length);
-    const list = document.getElementById('historyList');
-    
-    if (history.length === 0) {
-        list.innerHTML = '<p style="text-align:center; padding:20px;">Nenhum histórico encontrado na nuvem.</p>';
-    } else {
-        list.innerHTML = '';
-        history.forEach((item) => {
-            // Verificamos se metrics existe para não dar erro
-            const pcsVal = item.metrics && item.metrics.pcs ? item.metrics.pcs : 0;
-            
-            list.innerHTML += `
-                <div class="history-item" style="border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <b style="color: var(--primary);">${item.lote}</b><br>
-                        <small>${item.data} | PCS: ${pcsVal}</small><br>
-                        <small style="color: #666;">Operador: ${item.usuario || 'Sistema'}</small>
-                    </div>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn-primary" onclick="loadLot('${item.id}')" style="padding:5px 10px; font-size: 12px;">Carregar</button>
-                        <button class="btn-danger" onclick="deleteHistoryItem('${item.id}')" style="padding:5px 10px; font-size: 12px;">❌</button>
-                    </div>
-                </div>`;
-        });
-    }
-    document.getElementById('historyModal').style.display = 'block';
-}        
+        function openHistory() {
+            console.log("Abrindo historico. Total de lotes:", history.length);
+            const list = document.getElementById('historyList');
+            list.innerHTML = history.length === 0 ? '<p>Nenhum histórico encontrado.</p>' : '';
+            history.forEach((item, idx) => {
+                list.innerHTML += `
+                    <div class="history-item">
+                        <div><b>${item.lote}</b><br><small>${item.data} | PCS: ${item.metrics.pcs.toFixed(0)}</small></div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-primary" onclick="loadLot(${idx})" style="padding:5px 10px">Carregar</button>
+                            <button class="btn-danger" onclick="deleteHistoryItem(${idx})" style="padding:5px 10px">❌ Excluir</button>
+                        </div>
+                    </div>`;
+            });
+            document.getElementById('historyModal').style.display = 'block';
+        }
 
         function loadLot(idx) {
             const item = history[idx];
@@ -3339,28 +3327,6 @@
                 }
             }
         });
-    <script type="module">
-    // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyD1SlXItIwJPSucfWExeikNoqUJq72OGD8",
-  authDomain: "blend-catarinense-c6a8a.firebaseapp.com",
-  projectId: "blend-catarinense-c6a8a",
-  storageBucket: "blend-catarinense-c6a8a.firebasestorage.app",
-  messagingSenderId: "793365169698",
-  appId: "1:793365169698:web:91e9d7338a53c108d56c7b",
-  measurementId: "G-35MC1JBGXT"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-    
+    </script>
 </body>
 </html>
