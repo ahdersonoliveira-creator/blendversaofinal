@@ -2015,10 +2015,10 @@
                 if(data.theme) setTheme(data.theme);
                 if(data.ocultarZerados) {
                     ocultarZerados = data.ocultarZerados;
-                    document.getElementById('btnOcultarZerados').innerText = 'MOSTRAR MATERIAIS ZERADOS';
+                    document.getElementById('btnMostrar Materiais Zerados').innerText = 'OCULTAR ZERADOS';
                 }
                 if(data.calcData) {
-                    window.savedCalcData = data.calcData;
+                    window.savedCalcData = data.calcData;OcultarZerados
                     modoAutoCalculadora = data.calcData.modoAuto || false;
                 }
             }
@@ -2033,7 +2033,7 @@
             saveData();
         }
 
-        function toggleTheme() { setTheme(currentTheme === 'black' ? 'black' : 'light'); }
+        function toggleTheme() { setTheme(currentTheme === 'black' ? 'light' : 'black'); }
 
         function toggleLayout() {
             const body = document.body;
