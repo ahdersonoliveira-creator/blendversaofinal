@@ -1660,7 +1660,7 @@
         // ===== AUTHENTICATION SYSTEM =====
         let users = [];
         let currentUser = null;
-        let currentTheme = 'light';
+        let currentTheme = 'black';
 
         function initAuth() {
             checkSync();
@@ -2033,7 +2033,7 @@
             saveData();
         }
 
-        function toggleTheme() { setTheme(currentTheme === 'black' ? 'light' : 'black'); }
+        function toggleTheme() { setTheme(currentTheme === 'light' ? 'black' : 'light'); }
 
         function toggleLayout() {
             const body = document.body;
