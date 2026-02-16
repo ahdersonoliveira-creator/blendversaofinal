@@ -1347,7 +1347,7 @@
                     </div>
                     <button class="btn-info" id="usersManagementBtn" onclick="openUsersManagement()" style="display:none">👥 USUÁRIOS</button>
                     <button class="btn-info" onclick="openHistory()">📜 Histórico</button>
-                    <button class="btn-info" id="themeToggle" onclick="toggleTheme()">☀️ Tema Light</button>
+                    <button class="btn-info" id="themeToggle" onclick="toggleTheme()">🌙 Tema Black</button>
                     <button class="btn-info" id="layoutToggle" onclick="toggleLayout()">📱 Layout Compacto</button>
                     <button class="btn-success" onclick="gerarLinkCompartilhamento()" title="Compartilhar usuários via link">🔗 Compartilhar App</button>
                     <button class="btn-info" onclick="toggleCalculadoraMistura()" style="background-color: #e67e22;">🧮 Calculadora de Mistura</button>
@@ -2029,7 +2029,7 @@
         function setTheme(theme) {
             currentTheme = theme;
             document.documentElement.setAttribute('data-theme', theme);
-            document.getElementById('themeToggle').innerText = theme === 'Light' ? '🌙 Tema Black' : '☀️ Tema Light';
+            document.getElementById('themeToggle').innerText = theme === 'black' ? '☀️ Tema Light' : '🌙 Tema Black';
             saveData();
         }
 
