@@ -2266,6 +2266,11 @@
             });
             saveData();
             
+            // Sincroniza com o Firebase imediatamente após salvar o lote principal
+            if (window.syncDataToFirebase) {
+                window.syncDataToFirebase({ materials, percentages, history });
+            }
+            
             mostrarResumoLote(lote, totalTon, pesoCarreta, metrics, isApproved);
             showPDFButton();
         }
@@ -2819,6 +2824,9 @@
             if (confirm('Tem certeza que deseja excluir TODO o histórico salvo? Esta ação não pode ser desfeita.')) {
                 history = [];
                 saveData();
+                if (window.syncDataToFirebase) {
+                    window.syncDataToFirebase({ materials, percentages, history });
+                }
                 openHistory();
                 alert('Histórico excluído com sucesso!');
             }
@@ -2828,35 +2836,57 @@
             if (confirm('Tem certeza que deseja excluir este item do histórico?')) {
                 history.splice(idx, 1);
                 saveData();
+                if (window.syncDataToFirebase) {
+                    window.syncDataToFirebase({ materials, percentages, history });
+                }
                 openHistory();
             }
         }
 
-        function openHistory() {
-            console.log("Abrindo historico. Total de lotes:", history.length);
-            const list = document.getElementById('historyList');
-            list.innerHTML = history.length === 0 ? '<p>Nenhum histórico encontrado.</p>' : '';
-            history.forEach((item, idx) => {
-                list.innerHTML += `
-                    <div class="history-item">
-                        <div><b>${item.lote}</b><br><small>${item.data} | PCS: ${item.metrics.pcs.toFixed(0)}</small></div>
-                        <div style="display: flex; gap: 8px;">
-                            <button class="btn-primary" onclick="loadLot(${idx})" style="padding:5px 10px">Carregar</button>
-                            <button class="btn-danger" onclick="deleteHistoryItem(${idx})" style="padding:5px 10px">❌ Excluir</button>
-                        </div>
-                    </div>`;
-            });
-            document.getElementById('historyModal').style.display = 'block';
-        }
+       function openHistory() {
+    console.log("Abrindo histórico da nuvem. Total de lotes:", history.length);
+    const list = document.getElementById('historyList');
+    
+    if (history.length === 0) {
+        list.innerHTML = '<p style="text-align:center; padding:20px;">Nenhum histórico encontrado na nuvem.</p>';
+    } else {
+        list.innerHTML = '';
+        history.forEach((item, index) => {
+            // Verificamos se metrics existe para não dar erro
+            const pcsVal = item.metrics && item.metrics.pcs ? item.metrics.pcs : 0;
+            
+            list.innerHTML += `
+                <div class="history-item" style="border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <b style="color: var(--primary);">${item.lote}</b><br>
+                        <small>${item.data} | PCS: ${pcsVal}</small><br>
+                        <small style="color: #666;">Operador: ${item.usuario || 'Sistema'}</small>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-primary" onclick="loadLot(${index})" style="padding:5px 10px; font-size: 12px;">Carregar</button>
+                        <button class="btn-danger" onclick="deleteHistoryItem(${index})" style="padding:5px 10px; font-size: 12px;">❌</button>
+                    </div>
+                </div>`;
+        });
+    }
+    document.getElementById('historyModal').style.display = 'block';
+}        
 
         function loadLot(idx) {
             const item = history[idx];
+            if (!item) return;
             document.getElementById('numeroLote').value = item.lote;
             document.getElementById('totalToneladas').value = item.totalTon;
-            percentages = [...item.percentages];
+            
+            // Atualiza as porcentagens globais com os dados do lote carregado
+            if (item.percentages) {
+                percentages = [...item.percentages];
+            }
+            
             renderMaterials();
             updateResults();
             document.getElementById('historyModal').style.display = 'none';
+            alert('Lote "' + item.lote + '" carregado com sucesso!');
         }
 
         function toggleAutoCalculate() {
@@ -3033,6 +3063,9 @@
             });
             
             saveData();
+            if (window.syncDataToFirebase) {
+                window.syncDataToFirebase({ materials, percentages, history });
+            }
             alert('Lote salvo no histórico com sucesso!');
         }
 
@@ -3257,76 +3290,97 @@
         window.onload = initAuth;
     </script>
 
-    <!-- Firebase Configuration -->
+
+    <!-- Firebase Configuration - SOLUÇÃO DEFINITIVA E SEGURA -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         
         const firebaseConfig = {
-            apiKey: "AIzaSyDsHp_wgHMY4A8iP5vWcSGs9a3-CRHZ43E",
-            authDomain: "gerador-de-blends.firebaseapp.com",
-            projectId: "gerador-de-blends",
-            storageBucket: "gerador-de-blends.firebasestorage.app",
-            messagingSenderId: "314765490390",
-            appId: "1:314765490390:web:58f56431b74222b4b8f177"
+            apiKey: "AIzaSyD1SlXItIwJPSucfWExeikNoqUJq72OGD8",
+            authDomain: "blend-catarinense-c6a8a.firebaseapp.com",
+            projectId: "blend-catarinense-c6a8a",
+            storageBucket: "blend-catarinense-c6a8a.firebasestorage.app",
+            messagingSenderId: "793365169698",
+            appId: "1:793365169698:web:91e9d7338a53c108d56c7b",
+            measurementId: "G-35MC1JBGXT"
         };
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        console.log("Firebase & Firestore inicializados com sucesso!");
+        let db;
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            console.log("✅ Firebase Conectado!");
+        } catch (error) {
+            console.error("❌ Erro Firebase:", error);
+        }
 
-        // Função para salvar dados no Firestore
+        // Sincronizar Usuários
         window.syncUsersToFirebase = async function(usersList) {
+            if (!db) return;
             try {
                 await setDoc(doc(db, "appData", "users"), {
                     users: usersList,
                     lastUpdated: new Date().toISOString()
                 });
-                console.log("Usuários sincronizados com o Firebase!");
-            } catch (e) {
-                console.error("Erro ao sincronizar usuários:", e);
-            }
+            } catch (e) { console.error("Erro sync users:", e); }
         };
 
+        // Sincronizar Dados e HISTÓRICO
         window.syncDataToFirebase = async function(data) {
+            if (!db) return;
             try {
-                await setDoc(doc(db, "appData", "globalState"), {
+                const username = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : 'Sistema';
+                const payload = {
                     ...data,
+                    history: (typeof history !== 'undefined') ? history : (data.history || []),
                     lastUpdated: new Date().toISOString(),
-                    updatedBy: currentUser ? currentUser.username : 'Sistema'
-                });
-                console.log("Dados sincronizados com o Firebase!");
-            } catch (e) {
-                console.error("Erro ao sincronizar com Firebase:", e);
-            }
+                    updatedBy: username
+                };
+                await setDoc(doc(db, "appData", "globalState"), payload);
+                console.log("☁️ Histórico sincronizado!");
+            } catch (e) { console.error("Erro sync data:", e); }
         };
 
-        // Escutar usuários em tempo real
-        onSnapshot(doc(db, "appData", "users"), (doc) => {
-            if (doc.exists()) {
-                const data = doc.data();
-                if (data.users) {
-                    users = data.users;
-                    localStorage.setItem('blendUsers', JSON.stringify(users));
-                    console.log("Lista de usuários atualizada via Firebase!");
+        // Listeners em Tempo Real
+        if (db) {
+            onSnapshot(doc(db, "appData", "users"), (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    if (data.users) {
+                        localStorage.setItem('blendUsers', JSON.stringify(data.users));
+                        if (typeof users !== 'undefined') users = data.users;
+                    }
                 }
-            }
-        });
+            });
 
-        // Escutar mudanças em tempo real
-        onSnapshot(doc(db, "appData", "globalState"), (doc) => {
-            if (doc.exists()) {
-                const data = doc.data();
-                console.log("Novos dados recebidos do Firebase!");
-                
-                // Atualizar variáveis globais se não for o próprio usuário que salvou
-                if (data.updatedBy !== (currentUser ? currentUser.username : '')) {
-                    console.log("Sincronizando dados remotos...");
-                    init(data);
+            onSnapshot(doc(db, "appData", "globalState"), (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    const myUsername = (typeof currentUser !== 'undefined' && currentUser) ? currentUser.username : '';
+                    
+                    // Sincronização Bidirecional: Atualiza sempre que houver mudança na nuvem, 
+                    // a menos que tenha sido este próprio dispositivo a enviar agora.
+                    if (data.updatedBy !== myUsername) {
+                        console.log("🔄 Sincronizando dados da nuvem...");
+                        localStorage.setItem('blendDataPro', JSON.stringify(data));
+                        
+                        // Atualiza as variáveis globais do sistema
+                        if (data.history) history = data.history;
+                        if (data.materials) materials = data.materials;
+                        if (data.percentages) percentages = data.percentages;
+                        
+                        // Redesenha a interface para refletir os novos dados
+                        if (typeof renderMaterials === 'function') renderMaterials();
+                        if (typeof updateResults === 'function') updateResults();
+                        
+                        // Se o modal de histórico estiver aberto, atualiza ele também
+                        if (document.getElementById('historyModal').style.display === 'block') {
+                            if (typeof openHistory === 'function') openHistory();
+                        }
+                    }
                 }
-            }
-        });
+            });
+        }
     </script>
 </body>
-</html>
