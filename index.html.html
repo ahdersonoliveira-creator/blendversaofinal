@@ -2156,7 +2156,7 @@
 
         function updateResults() {
             const total = parseFloat(document.getElementById('totalToneladas').value) || 0;
-            const pesoCarreta = parseFloat(document.getElementById('pesoCarreta').value) || 39;
+            const pesoCarreta = parseFloat(document.getElementById('pesoCarreta').value) || 20;
             const m = calculateMetrics(percentages, total);
             
             materials.forEach((mat, idx) => {
@@ -2257,7 +2257,7 @@
         function saveCurrentLot() {
             const lote = document.getElementById('numeroLote').value || 'Lote_' + Date.now();
             const totalTon = parseFloat(document.getElementById('totalToneladas').value) || 1000;
-            const pesoCarreta = parseFloat(document.getElementById('pesoCarreta').value) || 39;
+            const pesoCarreta = parseFloat(document.getElementById('pesoCarreta').value) || 20;
             const metrics = calculateMetrics(percentages, totalTon);
             const isApproved = checkApprovalStatus();
             
