@@ -1366,7 +1366,7 @@
                 </div>
                 <div class="input-group">
                     <label>Média de peso p/ Carreta (t)</label>
-                    <input type="number" id="pesoCarreta" value="39" oninput="updateResults()">
+                    <input type="number" id="pesoCarreta" value="40" oninput="updateResults()">
                 </div>
                 <div class="input-group">
                     <label>PCS Mínimo</label>
@@ -2156,7 +2156,7 @@
 
         function updateResults() {
             const total = parseFloat(document.getElementById('totalToneladas').value) || 0;
-            const pesoCarreta = parseFloat(document.getElementById('pesoCarreta').value) || 40;
+            const pesoCarreta = parseFloat(document.getElementById('pesoCarreta').value) || 39;
             const m = calculateMetrics(percentages, total);
             
             materials.forEach((mat, idx) => {
@@ -2257,7 +2257,7 @@
         function saveCurrentLot() {
             const lote = document.getElementById('numeroLote').value || 'Lote_' + Date.now();
             const totalTon = parseFloat(document.getElementById('totalToneladas').value) || 1000;
-            const pesoCarreta = parseFloat(document.getElementById('pesoCarreta').value) || 20;
+            const pesoCarreta = parseFloat(document.getElementById('pesoCarreta').value) || 39;
             const metrics = calculateMetrics(percentages, totalTon);
             const isApproved = checkApprovalStatus();
             
