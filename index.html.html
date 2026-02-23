@@ -2261,9 +2261,21 @@
             const metrics = calculateMetrics(percentages, totalTon);
             const isApproved = checkApprovalStatus();
             
-            history.unshift({
-                lote, data: new Date().toLocaleString(), metrics, percentages: [...percentages], totalTon: totalTon, approved: isApproved
-            });
+	            // Captura dados de mistura para salvar no histórico
+	            const misturaDados = {
+	                loteInfo: document.getElementById('misturaLoteInfo').value,
+	                bonitoCargas: document.getElementById('misturaBonitoCargas').value,
+	                bonitoConchadas: document.getElementById('misturaBonitoConchadas').value,
+	                finosCargas: document.getElementById('misturaFinosCargas').value,
+	                finosConchadas: document.getElementById('misturaFinosConchadas').value,
+	                especialConchadas: document.getElementById('misturaEspecialConchadas').value,
+	                obs: document.getElementById('misturaObs').value,
+	                visivel: misturaVisivel
+	            };
+
+	            history.unshift({
+	                lote, data: new Date().toLocaleString(), metrics, percentages: [...percentages], totalTon: totalTon, approved: isApproved, mistura: misturaDados
+	            });
             saveData();
             
             // Sincroniza com o Firebase imediatamente após salvar o lote principal
@@ -2868,17 +2880,138 @@
                         <small>${item.data} | PCS: ${pcsVal}</small><br>
                         <small style="color: #666;">Operador: ${item.usuario || 'Sistema'}</small>
                     </div>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn-primary" onclick="loadLot(${index})" style="padding:5px 10px; font-size: 12px;">Carregar</button>
-                        <button class="btn-danger" onclick="deleteHistoryItem(${index})" style="padding:5px 10px; font-size: 12px;">❌</button>
-                    </div>
+	                    <div style="display: flex; gap: 8px;">
+	                        <button class="btn-primary" onclick="loadLot(${index})" style="padding:5px 10px; font-size: 12px;">Carregar</button>
+	                        <button class="btn-info" onclick="gerarOCHistorico(${index})" style="padding:5px 10px; font-size: 12px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer;">📄 OC</button>
+	                        <button class="btn-danger" onclick="deleteHistoryItem(${index})" style="padding:5px 10px; font-size: 12px;">❌</button>
+	                    </div>
                 </div>`;
         });
     }
     document.getElementById('historyModal').style.display = 'block';
 }        
 
-        function loadLot(idx) {
+		        function gerarOCHistorico(idx) {
+		            const item = history[idx];
+		            if (!item) return;
+		            
+		            // Salva o estado atual para restaurar depois
+		            const originalResumo = ultimoResumo;
+		            const originalPercentages = [...percentages];
+		            
+		            // Prepara os dados para a função gerarOC
+		            const pesoCarreta = parseFloat(document.getElementById('pesoCarreta').value) || 20;
+		            const qtdCarretas = (item.totalTon / pesoCarreta).toFixed(1);
+		            const mediaCarreta = (item.totalTon / qtdCarretas).toFixed(2);
+		            
+		            ultimoResumo = {
+		                lote: item.lote,
+		                totalTon: item.totalTon,
+		                qtdCarretas: qtdCarretas,
+		                mediaCarreta: mediaCarreta,
+		                metrics: item.metrics,
+		                dataHora: item.data
+		            };
+		            
+		            // Temporariamente substitui as porcentagens para a geração da OC
+		            percentages = [...item.percentages];
+		            
+		            // Se houver dados de mistura salvos no histórico, usamos eles
+		            if (item.mistura) {
+		                const originalMisturaVisivel = misturaVisivel;
+		                const m = item.mistura;
+		                
+		                // Criamos uma versão temporária da função gerarOC que usa os dados do histórico
+		                const originalGerarOC = window.gerarOC;
+		                window.gerarOC = function() {
+		                    const win = window.open('', '_blank');
+		                    let materiaisHTML = '';
+		                    materials.forEach((mat, idx) => {
+		                        if (percentages[idx] > 0) {
+		                            const qtdTon = (ultimoResumo.totalTon * percentages[idx] / 100).toFixed(2);
+		                            materiaisHTML += `
+		                                <tr style="border-bottom: 1px solid #ddd;">
+		                                    <td style="padding: 12px; text-align: left;">${mat.nome}</td>
+		                                    <td style="padding: 12px; text-align: center; font-weight: bold;">${percentages[idx].toFixed(1)}%</td>
+		                                    <td style="padding: 12px; text-align: center; font-weight: bold; color: #2c3e50;">${qtdTon} t</td>
+		                                </tr>`;
+		                        }
+		                    });
+
+		                    let misturaHTML = '';
+		                    if (m.visivel) {
+		                        misturaHTML = `
+		                            <div style="margin-top: 30px; padding: 20px; background: #f9f9f9; border: 2px solid #e67e22; border-radius: 8px;">
+		                                <h3 style="text-align: center; color: #2c3e50; margin-bottom: 20px; border-bottom: 3px solid #e67e22; padding-bottom: 10px;">INSTRUÇÕES DE MISTURA</h3>
+		                                <div style="margin-bottom: 15px; padding: 12px; background: white; border-radius: 6px;"><strong style="color: #2c3e50;">1º Lote:</strong> ${m.loteInfo}</div>
+		                                <div style="margin-bottom: 15px; padding: 12px; background: white; border-radius: 6px;"><strong style="color: #2c3e50;">Carvão Bonito:</strong> ${m.bonitoCargas}<br><span style="margin-left: 20px; color: #555;">→ Usar <strong>${m.bonitoConchadas}</strong> conchadas de especial</span></div>
+		                                <div style="margin-bottom: 15px; padding: 12px; background: white; border-radius: 6px;"><strong style="color: #2c3e50;">Mistura de Finos + Especial:</strong> ${m.finosCargas}<br><span style="margin-left: 20px; color: #555;">→ Usar <strong>${m.finosConchadas}</strong> de Finos e <strong>${m.especialConchadas}</strong> de Especial por carreta</span></div>
+		                                ${m.obs ? `<div style="margin-top: 15px; padding: 12px; background: white; border-radius: 6px; border: 1px solid #ddd;"><strong style="color: #2c3e50;">OBSERVAÇÕES:</strong> <span style="font-weight: bold;">${m.obs}</span></div>` : ''}
+		                            </div>`;
+		                    }
+
+		                    win.document.write(`
+		                        <html>
+		                        <head>
+		                            <title>OC - Operador de Carregadeira - Lote ${ultimoResumo.lote}</title>
+		                            <style>
+		                                body { font-family: sans-serif; padding: 40px; color: #333; }
+		                                .oc-container { max-width: 800px; margin: auto; border: 2px solid #333; padding: 20px; }
+		                                .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+		                                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+		                                th { background: #f4f4f4; padding: 12px; border-bottom: 2px solid #333; }
+		                                .footer { margin-top: 40px; text-align: center; font-size: 0.9em; color: #666; }
+		                                .print-btn { background: #333; color: white; padding: 10px 20px; border: none; cursor: pointer; margin-bottom: 20px; }
+		                                @media print { .print-btn { display: none; } }
+		                                * { font-weight: bold !important; }
+		                            </style>
+		                        </head>
+		                        <body>
+		                            <button class="print-btn" onclick="window.print()">🖨️ Imprimir Ordem</button>
+		                            <div class="oc-container">
+		                                <div class="header">
+		                                    <h1>ORDEM DE CARREGAMENTO (OC)</h1>
+		                                    <p><b>Lote:</b> ${ultimoResumo.lote} | <b>Data:</b> ${ultimoResumo.dataHora}</p>
+		                                    <div style="display: flex; justify-content: space-around; background: #f9f9f9; padding: 10px; border-radius: 8px; border: 1px solid #ddd; margin-top: 15px;">
+		                                        <div><b>Volume Total:</b><br>${ultimoResumo.totalTon} Toneladas</div>
+		                                        <div><b>Qtd. Carretas:</b><br>${ultimoResumo.qtdCarretas}</div>
+		                                        <div><b>Média/Carreta:</b><br>${ultimoResumo.mediaCarreta} t</div>
+		                                    </div>
+		                                    <div style="display: flex; justify-content: space-around; background: #fff3e0; padding: 10px; border-radius: 8px; border: 1px solid #e67e22; margin-top: 10px; font-size: 0.9em;">
+		                                        <div><b>Cinza:</b><br>${ultimoResumo.metrics.cinza.toFixed(2)}%</div>
+		                                        <div><b>PCS:</b><br>${ultimoResumo.metrics.pcs.toFixed(0)} kcal</div>
+		                                        <div><b>Umidade:</b><br>${ultimoResumo.metrics.umid.toFixed(2)}%</div>
+		                                        <div><b>Enxofre:</b><br>${ultimoResumo.metrics.enxofre.toFixed(2)}%</div>
+		                                    </div>
+		                                </div>
+		                                <table>
+		                                    <thead><tr><th style="text-align: left;">Material</th><th>Porcentagem (%)</th><th>Quantidade (Ton)</th></tr></thead>
+		                                    <tbody>${materiaisHTML}</tbody>
+		                                </table>
+		                                ${misturaHTML}
+		                                <div class="footer">
+		                                    <p>________________________________________________<br>Assinatura do Responsável</p>
+		                                    <p>Documento gerado pelo Sistema de Blends CCL</p>
+		                                </div>
+		                            </div>
+		                        </body>
+		                        </html>`);
+		                    win.document.close();
+		                };
+		                
+		                window.gerarOC();
+		                window.gerarOC = originalGerarOC; // Restaura a função original
+		            } else {
+		                // Se for um lote antigo sem dados de mistura, gera apenas com os dados básicos
+		                gerarOC();
+		            }
+		            
+		            // Restaura o estado original
+		            ultimoResumo = originalResumo;
+		            percentages = originalPercentages;
+		        }
+
+	        function loadLot(idx) {
             const item = history[idx];
             if (!item) return;
             document.getElementById('numeroLote').value = item.lote;
